@@ -12,9 +12,10 @@ public:
 	int data;					// the data specific to the node
 	Node *left;				// a pointer to the node down to the left
 	Node *right;			// a pointer to the node down to the right
-	int height;
+	int height;				// the height of the node, 1 if no children
 // Member Functions
-	Node(const int& the_data, Node* leftChild = NULL, Node* rightChild = NULL, int H = 0){	// Base Constructor
+		// Base Constructor
+	Node(const int& the_data = 0, Node* leftChild = NULL, Node* rightChild = NULL, int H = 0){
 		data = the_data;
 		left = leftChild;
 		right = rightChild;
