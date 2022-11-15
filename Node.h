@@ -19,7 +19,7 @@ public:
 		data = the_data;
 		left = leftChild;
 		right = rightChild;
-		H = height;
+		height = H;
 	};
 	~Node() {};		// Destructor
 	int getData() const;		// return the value stored at the node

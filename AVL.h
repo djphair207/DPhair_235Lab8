@@ -30,6 +30,7 @@ private:
 	void reBalance(Node*& ptr);	// check the balance of the node by comparing the heights of its two children
 	void updateHeight(Node*& ptr); // update the height of the nodes 
 	void clearHelper(Node*& curr_root);	// recursive, called by clear to delete
+	void debug_helper(Node* ptr); // prints out all the stuff for the node
 };
 
 #endif

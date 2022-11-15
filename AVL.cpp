@@ -7,14 +7,19 @@ Node* AVL::getRootNode() const {
 /* * * * * * * ADD * * * * * */
 // need to add the rotation to the end of add helper
 bool AVL::add(int data) {
+	cout << "Adding a value: " << data << endl;
 	return addHelper(data,this->root);
 }
 
 bool AVL::addHelper(int data, Node*& curr_root) {
 	if(curr_root == NULL) {		// if the tree is empty
 		curr_root = new Node(data);	// insert the value as the root, L,R&Parent deafult to NULL
+		updateHeight(root);	// update the heights in the tree
 		reBalance(root);		// rebalance the tree
-		updateHeight(curr_root);	// update the height, I don't think this will be good enough
+		//updateHeight(curr_root);	// update the height, I don't think this will be good enough
+		
+		debug_helper(curr_root);
+		debug_helper(root);
 		return true;	//success
 	}
 	else {
@@ -33,6 +38,7 @@ bool AVL::addHelper(int data, Node*& curr_root) {
 /* * * * * * REMOVE * * * * * */
 // need to add the rotation to the end of remove helper
 bool AVL::remove(int data) {
+	cout << "Removing a value\n";
 	return removeHelper(data,this->root);
 }
 
@@ -108,7 +114,9 @@ void AVL::rotateRight(Node*& ptr) {
 	temp->right = ptr;
 	ptr = temp;
 	updateHeight(ptr->right);
+	debug_helper(ptr->right);
 	updateHeight(ptr);
+	debug_helper(ptr);
 }
 
 void AVL::rotateLeft(Node*& ptr) {
@@ -124,10 +132,16 @@ void AVL::rotateLeft(Node*& ptr) {
 	ptr = temp;
 	updateHeight(ptr->left);
 	updateHeight(ptr);
+	debug_helper(ptr->left);
+	debug_helper(ptr);
+	debug_helper(ptr->right);
 }
 
-void AVL::reBalance(Node*& ptr) {
-	cout << "Rebalancing the tree" << endl;
+void AVL::reBalance(Node*& ptr) {		
+	// THIS ONE PROBABLY NEEDS TO BE RECURSIVE
+	//	Base Case: ptr->left && ptr->right have no children?
+	//							ptr->left && ptr->right have height <= 1?
+	cout << "Checking if rebalancing necessary" << endl;
 	int LHeight;						// declare two ints for the child heights
 	int RHeight;
 	int LLHeight, LRHeight;	// declare ints to keep track of child heights
@@ -136,19 +150,19 @@ void AVL::reBalance(Node*& ptr) {
 	
 	if(ptr->left == NULL) {		// if L child is null...
 		cout << "\tL child is NULL\n";
-		LHeight = 0;					// L height is 0
+		LHeight = -1;					// L height is 0
 	}
 	else {
 		cout << "\tL child is NOT NULL\n";
-		LHeight = ptr->left->getHeight(); // Otherwise get its height
+		LHeight = ptr->left->getHeight() + 1; // Otherwise get its height and add 1
 	}
 	if(ptr->right == NULL) {	// if R child is null...
 		cout << "\tR child is NULL\n";
-		RHeight = 0;				// R height is 0
+		RHeight = -1;				// R height is 0
 	}
 	else {
 		cout << "\tR child is NOT NULL\n";
-		RHeight = ptr->right->getHeight();	// Otherwise get its height
+		RHeight = ptr->right->getHeight() + 1;	// Otherwise get its height and add 1
 	}
 	
 	balance = RHeight - LHeight;
@@ -188,7 +202,7 @@ void AVL::reBalance(Node*& ptr) {
 	// check if RR or RL
 	// RR: do a left rotation on ptr
 	// RL: do a right on ptr->right, then a left on ptr
-	if(balance > 1) {
+	else if(balance > 1) {
 		if(ptr->right->right == NULL) {		// if RR child is null...
 			RRHeight = 0;					// RR height is 0
 		}
@@ -213,26 +227,81 @@ void AVL::reBalance(Node*& ptr) {
 			rotateLeft(ptr);
 		}
 	}
+	else {
+		cout << "\tRebalancing not necessary\n";
+	}
 	
 	return;
 }
 
 void AVL::updateHeight(Node*& ptr) {
+	cout << "updating height\n";
 	int leftHeight;						// declare two ints for the child heights
 	int rightHeight;
+
+	if(ptr->left == NULL && ptr->right == NULL) {		// if the node has no children
+		cout << "\tthis node("<<ptr->data<<") has no children. Its height is 0\n";
+		ptr->height = 0;
+		return;
+	}
+	else if(ptr->left != NULL && ptr->right == NULL) {		// if there is a L child but no R child
+		cout << "\tthis node("<<ptr->data<<") has a L child but no R child. Updating its L child\n";
+		updateHeight(ptr->left);	// update its height of the child
+		ptr->height = ptr->left->height + 1;	// set the current node's height to its child's + 1
+		cout << "\tthis node("<<ptr->data<<") now has a height of " << ptr->height << endl;
+	}
+	else if(ptr->left == NULL && ptr->right != NULL) {		// if there is a R child but no L child
+		cout << "\tthis node("<<ptr->data<<") has a R child but no L child. Updating its R child\n";
+		updateHeight(ptr->right);	// update its height of the child
+		ptr->height = ptr->right->height + 1;	// set the current node's height to its child's + 1
+		cout << "\tthis node("<<ptr->data<<") now has a height of " << ptr->height << endl;
+	}
+	else if(ptr->left != NULL && ptr->right != NULL) {		// if there are children on both sides
+		cout << "\tthis node("<<ptr->data<<") has children on both sides. Update both\n";
+		updateHeight(ptr->left);		// update the L height
+		updateHeight(ptr->right);		// update the R height
+		ptr->height = max(ptr->left->height,ptr->right->height) + 1;		// set the current node's height to the higher of the children + 1
+		cout << "\tthis node("<<ptr->data<<") now has a height of " << ptr->height << endl;
+	}
+
+/*
 	if(ptr->left == NULL) {		// if L child is null...
-		leftHeight = 0;					// L height is 0
+		cout << "\tthis node("<<ptr->data<<") has no L child so L height is -1\n";
+		leftHeight = -1;					// L height is -1 b/c it's the NULL
 	}
 	else {
 		leftHeight = ptr->left->getHeight(); // Otherwise get its height
+		cout << "\tthis node("<<ptr->data<<") has a L child so L height is " << leftHeight << endl;
 	}
 	if(ptr->right == NULL) {	// if R child is null...
-		rightHeight = 0;				// R height is 0
+		cout << "\tthis node("<<ptr->data<<") has no R child so R height is -1\n";
+		rightHeight = -1;				// R height is -1 b/c it's the NULL
 	}
 	else {
 		rightHeight = ptr->right->getHeight();	// Otherwise get its height
+		cout << "\tthis node("<<ptr->data<<") has a R child so R height is " << rightHeight << endl;
 	}
-	
+	int M = max(leftHeight,rightHeight);
+	cout << "\tthe max of these two is " << M << endl;
 	ptr->height = max(leftHeight,rightHeight) + 1;	// parent height is highest child + 1
-	
+	cout << "\t So this node's height is " << ptr->height << endl;
+*/
+}
+
+void AVL::debug_helper(Node* ptr) {
+	cout << "DEBUG\n";
+	cout << "\t\tThis node contains " << ptr->data << endl;
+	if(ptr->left != NULL && ptr->right != NULL) {
+		cout << "\t\t\tIt has L & R children\n";
+	}
+	else if(ptr->left != NULL && ptr->right == NULL) {
+		cout << "\t\t\tIt has a L child and no R child\n";
+	}
+	else if(ptr->left == NULL && ptr->right != NULL) {
+		cout << "\t\t\tIt has a R child and no L child\n";
+	}
+	else {	//ptr->left == NULL && ptr->right == NULL
+		cout << "\t\t\tIt has no children\n";
+	}
+	cout << "\t\t\tIts height is " << ptr->height << endl;
 }

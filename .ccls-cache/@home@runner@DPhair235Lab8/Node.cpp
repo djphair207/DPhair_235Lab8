@@ -12,6 +12,6 @@ Node* Node::getRightChild() const {
 	return right;
 }
 
-int Node::getHeight() {
-	return 00;
+int Node::getHeight() {	// HOPEFULLY IT WORKS
+	return height;
 }
